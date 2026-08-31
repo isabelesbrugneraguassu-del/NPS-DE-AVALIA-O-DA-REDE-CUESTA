@@ -183,18 +183,26 @@ function deviceHash(){try{let d=localStorage.getItem("cuesta_dev");if(!d){d="d_"
 
 async function loadContext(){
   try{
-    const rows=await sbGet("qr_code?slug=eq."+encodeURIComponent(QR_SLUG)+"&select=id,codigo,empresa_id,ponto_id,campanha_id,ponto(loja_id,setor_id,loja(nome),setor(nome))&limit=1");
+    const rows=await sbGet("qr_code?slug=eq."+encodeURIComponent(QR_SLUG)+"&select=id,codigo,empresa_id,ponto_id,campanha_id&limit=1");
     const q=rows&&rows[0];
-    if(q){
-      CTX.qr_id=q.id; if(q.codigo)CTX.qr=q.codigo; CTX.empresa_id=q.empresa_id; CTX.ponto_id=q.ponto_id; CTX.campanha_id=q.campanha_id;
-      const pt=q.ponto||{}; CTX.loja_id=pt.loja_id; CTX.setor_id=pt.setor_id;
-      if(pt.loja&&pt.loja.nome)CTX.loja=pt.loja.nome;
-      if(pt.setor&&pt.setor.nome)CTX.setor=pt.setor.nome;
-      try{const pv=await sbRpc("pesquisa_ativa_do_qr",{p_qr:q.id});CTX.pesquisa_versao_id=(typeof pv==="string")?pv:(pv&&pv[0]?pv[0]:null);}catch(e){}
-      try{sbPost("qr_acesso",{qr_code_id:q.id,dispositivo_hash:deviceHash()});}catch(e){}
-      try{ if(CTX.pesquisa_versao_id){ const pr=await sbGet("pergunta?pesquisa_versao_id=eq."+CTX.pesquisa_versao_id+"&select=tipo,texto,config,opcao(texto,valor,icone,sentimento,ordem)&order=ordem"); aplicaPesquisa(pr); } }catch(e){}
-      if(idx===0)render();
+    if(!q) return;
+    CTX.qr_id=q.id; if(q.codigo)CTX.qr=q.codigo; CTX.empresa_id=q.empresa_id; CTX.ponto_id=q.ponto_id; CTX.campanha_id=q.campanha_id;
+    // ponto -> loja_id, setor_id (busca simples, sem aninhamento)
+    if(q.ponto_id){
+      try{
+        const pr=await sbGet("ponto?id=eq."+q.ponto_id+"&select=loja_id,setor_id&limit=1");
+        const pt=pr&&pr[0];
+        if(pt){
+          CTX.loja_id=pt.loja_id; CTX.setor_id=pt.setor_id;
+          if(pt.loja_id){try{const lr=await sbGet("loja?id=eq."+pt.loja_id+"&select=nome&limit=1");if(lr&&lr[0]&&lr[0].nome)CTX.loja=lr[0].nome;}catch(e){}}
+          if(pt.setor_id){try{const sr=await sbGet("setor?id=eq."+pt.setor_id+"&select=nome&limit=1");if(sr&&sr[0]&&sr[0].nome)CTX.setor=sr[0].nome;}catch(e){}}
+        }
+      }catch(e){}
     }
+    try{const pv=await sbRpc("pesquisa_ativa_do_qr",{p_qr:q.id});CTX.pesquisa_versao_id=(typeof pv==="string")?pv:(pv&&pv[0]?pv[0]:null);}catch(e){}
+    try{sbPost("qr_acesso",{qr_code_id:q.id,dispositivo_hash:deviceHash()});}catch(e){}
+    try{ if(CTX.pesquisa_versao_id){ const pr=await sbGet("pergunta?pesquisa_versao_id=eq."+CTX.pesquisa_versao_id+"&select=tipo,texto,config,opcao(texto,valor,icone,sentimento,ordem)&order=ordem"); aplicaPesquisa(pr); } }catch(e){}
+    if(idx===0)render();
   }catch(e){ /* sem internet: segue com o contexto padrão */ }
 }
 
