@@ -172,7 +172,8 @@ const SUPABASE_KEY="sb_publishable_hmw8JGj4Xhtg4uD2sGmbnQ_Gm4bA3L8";
 const QR_SLUG=(new URLSearchParams(location.search).get("qr")||"l04-pad-001");
 
 const CTX={loja:"Loja 04",setor:"Padaria",qr:"QR-L04-PAD-001",
-  empresa_id:null,loja_id:null,setor_id:null,ponto_id:null,qr_id:null,campanha_id:null,pesquisa_versao_id:null,last_avaliacao_id:null};
+  empresa_id:null,loja_id:null,setor_id:null,ponto_id:null,qr_id:null,campanha_id:null,pesquisa_versao_id:null,last_avaliacao_id:null,
+  surveyPos:null,surveyNeg:null,ratingText:null};
 
 function sbHeaders(extra){return Object.assign({apikey:SUPABASE_KEY,Authorization:"Bearer "+SUPABASE_KEY,"Content-Type":"application/json"},extra||{});}
 async function sbGet(path){const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{headers:sbHeaders()});if(!r.ok)throw new Error("GET "+r.status);return r.json();}
@@ -191,6 +192,7 @@ async function loadContext(){
       if(pt.setor&&pt.setor.nome)CTX.setor=pt.setor.nome;
       try{const pv=await sbRpc("pesquisa_ativa_do_qr",{p_qr:q.id});CTX.pesquisa_versao_id=(typeof pv==="string")?pv:(pv&&pv[0]?pv[0]:null);}catch(e){}
       try{sbPost("qr_acesso",{qr_code_id:q.id,dispositivo_hash:deviceHash()});}catch(e){}
+      try{ if(CTX.pesquisa_versao_id){ const pr=await sbGet("pergunta?pesquisa_versao_id=eq."+CTX.pesquisa_versao_id+"&select=tipo,texto,config,opcao(texto,valor,icone,sentimento,ordem)&order=ordem"); aplicaPesquisa(pr); } }catch(e){}
       if(idx===0)render();
     }
   }catch(e){ /* sem internet: segue com o contexto padrão */ }
@@ -263,6 +265,7 @@ function ICON(n){
 }
 
 /* motivos por setor + nota (agora com ícones) */
+const DBICON={bread:"bread",grid:"grid",smile:"heart",sparkle:"sparkles",sparkles:"sparkles",heart:"heart",tag:"tag",search:"package",leaf:"sparkles",clock:"clock",star:"heart",alert:"clock",layers:"layers",cart:"cart",package:"package"};
 const FACTOR_SETS={
   padaria:{
     pos:[{k:"pao",ic:"bread",t:"Pão fresquinho"},{k:"atendimento",ic:"heart",t:"Atendimento"},{k:"variedade",ic:"layers",t:"Variedade"},{k:"organizacao",ic:"grid",t:"Organização"},{k:"precos",ic:"tag",t:"Preço justo"},{k:"limpeza",ic:"sparkles",t:"Limpeza"}],
@@ -300,8 +303,24 @@ function buildFlow(){
   f.push("recommend","improve","done");
   return f;
 }
-function posSet(){const s=FACTOR_SETS[SECTOR]||FACTOR_SETS.default;return s.pos;}
-function negSet(){const s=FACTOR_SETS[SECTOR]||FACTOR_SETS.default;return s.neg;}
+function posSet(){if(CTX.surveyPos)return CTX.surveyPos;const s=FACTOR_SETS[SECTOR]||FACTOR_SETS.default;return s.pos;}
+function negSet(){if(CTX.surveyNeg)return CTX.surveyNeg;const s=FACTOR_SETS[SECTOR]||FACTOR_SETS.default;return s.neg;}
+function aplicaPesquisa(perguntas){
+  if(!perguntas||!perguntas.length)return;
+  let pos=null,neg=null,rating=null;
+  perguntas.forEach(pg=>{
+    if(pg.tipo==="estrelas"){rating=pg.texto;}
+    else if(pg.tipo==="multipla"){
+      const ops=(pg.opcao||[]).slice().sort((a,b)=>(a.ordem||0)-(b.ordem||0));
+      const chave=(pg.config&&pg.config.chave)||((ops[0]&&ops[0].sentimento==="positivo")?"liked":"gaps");
+      const arr=ops.map(o=>({k:o.valor,ic:DBICON[o.icone]||"grid",t:o.texto}));
+      if(chave==="liked")pos=arr;else neg=arr;
+    }
+  });
+  if(pos&&pos.length)CTX.surveyPos=pos;
+  if(neg&&neg.length)CTX.surveyNeg=neg;
+  if(rating)CTX.ratingText=rating;
+}
 function followupTopics(){
   return state.gaps.filter(k=>{
     if(!FOLLOWUPS[k]) return false;
@@ -374,7 +393,7 @@ function render(){
 
 const STEPS={
   rating({heroQ,body,footer}){
-    setHero(heroQ,saudacao(),"Como foi sua visita à Padaria hoje?","Sua opinião ajuda a Cuesta a melhorar de verdade 💚");
+    setHero(heroQ,saudacao(),CTX.ratingText||("Como foi sua visita à "+CTX.setor+" hoje?"),"Sua opinião ajuda a Cuesta a melhorar de verdade 💚");
     body.classList.add("center");
     body.innerHTML=`<div class="stars" id="s"></div><div class="star-label" id="l">${state.rating?RATING_WORDS[state.rating]:""}</div>`;
     const wrap=body.querySelector("#s"),lab=body.querySelector("#l");
