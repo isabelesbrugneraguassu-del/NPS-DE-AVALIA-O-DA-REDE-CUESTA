@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root{
     --bg:#F1F4EE; --card:#FFFFFF; --ink:#18241E; --muted:#5E6B63; --line:#E4E7E1;
@@ -18,11 +19,9 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   html,body{margin:0}
   body{font-family:var(--body);background:var(--bg);color:var(--ink);line-height:1.45;-webkit-font-smoothing:antialiased}
-  a{color:inherit}
 
-  /* ---------------- LOGIN ---------------- */
-  .login-wrap{min-height:100dvh;display:grid;place-items:center;padding:24px;
-    background:radial-gradient(120% 80% at 50% -10%,#1e6746 0%,#123f2b 60%,#0e3524 100%)}
+  /* ---------- LOGIN ---------- */
+  .login-wrap{min-height:100dvh;display:grid;place-items:center;padding:24px;background:radial-gradient(120% 80% at 50% -10%,#1e6746 0%,#123f2b 60%,#0e3524 100%)}
   .login-card{width:100%;max-width:380px;background:var(--card);border-radius:22px;padding:30px 26px;box-shadow:0 30px 70px -30px rgba(0,0,0,.55)}
   .brand{font-family:var(--display);font-weight:800;letter-spacing:-.02em}
   .login-card .brand{font-size:24px;color:var(--green)}
@@ -30,54 +29,64 @@
   label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin:14px 0 6px}
   input{width:100%;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;font:inherit;font-size:15.5px;background:#fff}
   input:focus{outline:none;border-color:var(--green)}
-  .btn{width:100%;border:0;border-radius:13px;padding:14px;cursor:pointer;font-family:var(--display);font-weight:700;font-size:16px;
-    background:var(--green);color:#fff;margin-top:20px;transition:transform .1s,background .15s}
-  .btn:hover{background:var(--green-deep)}
-  .btn:active{transform:scale(.99)}
-  .btn:disabled{opacity:.6;cursor:default}
+  .btn{width:100%;border:0;border-radius:13px;padding:14px;cursor:pointer;font-family:var(--display);font-weight:700;font-size:16px;background:var(--green);color:#fff;margin-top:20px;transition:transform .1s,background .15s}
+  .btn:hover{background:var(--green-deep)} .btn:active{transform:scale(.99)} .btn:disabled{opacity:.6}
   .err{background:#FBEBEA;color:var(--red);border:1px solid #F0C9C6;border-radius:11px;padding:10px 12px;font-size:13px;margin-top:16px;display:none}
   .err.on{display:block}
 
-  /* ---------------- APP SHELL ---------------- */
-  .shell{max-width:1080px;margin:0 auto;padding:0 20px 60px}
-  header.top{display:flex;align-items:center;justify-content:space-between;padding:18px 0;gap:16px;border-bottom:1px solid var(--line);margin-bottom:24px;flex-wrap:wrap}
+  /* ---------- SHELL ---------- */
+  .shell{max-width:1120px;margin:0 auto;padding:0 20px 64px}
+  header.top{display:flex;align-items:center;justify-content:space-between;padding:18px 0;gap:16px;border-bottom:1px solid var(--line);margin-bottom:22px;flex-wrap:wrap}
   .top .brand{font-size:20px;color:var(--green)}
-  .top .brand small{color:var(--muted);font-weight:600;font-family:var(--body);font-size:12.5px;margin-left:8px;letter-spacing:.02em}
+  .top .brand small{color:var(--muted);font-weight:600;font-family:var(--body);font-size:12.5px;margin-left:8px}
   .who{display:flex;align-items:center;gap:12px;font-size:13.5px;color:var(--muted)}
-  .who b{color:var(--ink)}
-  .who .badge{background:var(--tint);color:var(--green);font-weight:700;font-size:11px;padding:3px 9px;border-radius:999px;text-transform:capitalize}
+  .who b{color:var(--ink)} .who .badge{background:var(--tint);color:var(--green);font-weight:700;font-size:11px;padding:3px 9px;border-radius:999px;text-transform:capitalize}
   .sair{border:1px solid var(--line);background:#fff;border-radius:10px;padding:8px 13px;font-size:13px;font-weight:600;cursor:pointer;color:var(--ink)}
   .sair:hover{background:var(--bg)}
 
-  .hero-line{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:4px}
-  h1{font-family:var(--display);font-weight:800;letter-spacing:-.02em;font-size:26px;margin:0}
-  .data-hoje{color:var(--muted);font-size:14px;text-transform:capitalize}
+  .hero-line{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  h1{font-family:var(--display);font-weight:800;letter-spacing:-.02em;font-size:25px;margin:0}
+  .h1sub{color:var(--muted);font-size:13.5px;text-transform:capitalize}
+  .tabs{display:flex;gap:6px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:4px}
+  .tabs button{border:0;background:transparent;padding:8px 14px;border-radius:9px;font:inherit;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer}
+  .tabs button.on{background:var(--green);color:#fff}
 
-  /* KPIs */
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:20px 0 26px}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
   .kpi{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px 18px}
   .kpi .lab{font-size:12.5px;font-weight:700;color:var(--muted)}
-  .kpi .val{font-family:var(--display);font-weight:800;font-size:32px;letter-spacing:-.02em;margin-top:6px;line-height:1}
-  .kpi .val small{font-size:15px;color:var(--muted);font-weight:600;margin-left:4px}
-  .kpi.alerta .val{color:var(--red)}
-  .kpi .foot{font-size:12px;color:var(--muted);margin-top:7px}
+  .kpi .val{font-family:var(--display);font-weight:800;font-size:31px;letter-spacing:-.02em;margin-top:6px;line-height:1}
+  .kpi .val small{font-size:15px;color:var(--muted);font-weight:600;margin-left:3px}
+  .kpi.alerta .val{color:var(--red)} .kpi .foot{font-size:12px;color:var(--muted);margin-top:7px}
 
-  /* seções */
-  .grid2{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;align-items:start}
-  .panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin-bottom:18px}
-  .panel h2{font-family:var(--display);font-weight:800;font-size:16px;margin:0 0 4px}
+  .grid{display:grid;gap:16px}
+  .g-2{grid-template-columns:1.35fr 1fr}
+  .g-3{grid-template-columns:1.1fr 1fr 1fr}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 20px;margin-bottom:16px}
+  .panel h2{font-family:var(--display);font-weight:800;font-size:16px;margin:0 0 3px}
   .panel .p-sub{color:var(--muted);font-size:12.5px;margin:0 0 14px}
+  .chart-box{position:relative;height:230px}
+  .chart-box.tall{height:260px}
 
-  /* lojas hoje (traffic light) */
-  .loja-row{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
-  .loja-row:first-of-type{border-top:0}
-  .dot{width:11px;height:11px;border-radius:50%;flex:none}
-  .dot.ok{background:var(--ok)} .dot.amber{background:var(--amber)} .dot.red{background:var(--red)} .dot.none{background:#C6CEC7}
-  .loja-row .nm{font-weight:600;flex:1}
-  .loja-row .mini{color:var(--muted);font-size:12.5px}
-  .loja-row .nota{font-family:var(--display);font-weight:800;font-size:16px}
+  .att{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
+  .att:first-of-type{border-top:0}
+  .att .rank{font-family:var(--display);font-weight:800;color:var(--muted);width:18px}
+  .att .nm{flex:1;font-weight:600;font-size:14px}
+  .att .nm .sug{display:block;font-weight:400;font-size:12px;color:var(--muted);margin-top:1px}
+  .att .bar{height:8px;background:var(--line);border-radius:999px;flex:1.1;overflow:hidden;max-width:120px}
+  .att .bar span{display:block;height:100%;border-radius:999px}
+  .att .bar span.pos{background:var(--ok)} .att .bar span.neg{background:var(--honey)}
+  .att .ct{font-family:var(--display);font-weight:800;font-size:14px;width:26px;text-align:right}
 
-  /* últimas avaliações */
+  .quotes{margin-top:12px;display:flex;flex-direction:column;gap:9px}
+  .quote{background:var(--tint);border:1px solid #CFE5D6;border-radius:12px;padding:10px 12px;font-size:13px;color:#25503a}
+  .quote .qm{display:block;color:var(--muted);font-size:11px;margin-top:4px;font-style:normal}
+
+  .insights{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .ins{background:linear-gradient(160deg,#1e6746,#123f2b);color:#fff;border-radius:16px;padding:16px}
+  .ins .k{font-size:11.5px;color:#bfe0cd;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+  .ins .v{font-family:var(--display);font-weight:800;font-size:19px;margin-top:7px;line-height:1.15}
+  .ins .d{font-size:12px;color:rgba(255,255,255,.82);margin-top:6px}
+
   .aval{display:flex;gap:12px;padding:13px 0;border-top:1px solid var(--line)}
   .aval:first-of-type{border-top:0}
   .stars{color:var(--honey);font-size:14px;letter-spacing:1px;flex:none;width:74px}
@@ -91,87 +100,57 @@
   .chip.pos{background:var(--tint);color:var(--green);border-color:#CFE5D6}
   .chip.neg{background:#FBEEE3;color:#B26a12;border-color:#F0D9BE}
 
-  /* pontos de atenção */
-  .att{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}
-  .att:first-of-type{border-top:0}
-  .att .rank{font-family:var(--display);font-weight:800;color:var(--muted);width:20px}
-  .att .nm{flex:1;font-weight:600;font-size:14px}
-  .att .bar{height:8px;background:var(--line);border-radius:999px;flex:1.4;overflow:hidden}
-  .att .bar span{display:block;height:100%;background:var(--honey);border-radius:999px}
-  .att .ct{font-family:var(--display);font-weight:800;font-size:14px;width:26px;text-align:right}
-
   .empty{color:var(--muted);font-size:13.5px;padding:8px 0}
-  .loading{color:var(--muted);font-size:14px;padding:40px 0;text-align:center}
-  @media(max-width:820px){ .kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr} }
+  .loading{color:var(--muted);font-size:14px;padding:60px 0;text-align:center}
+  @media(max-width:900px){ .kpis{grid-template-columns:repeat(2,1fr)} .g-2,.g-3{grid-template-columns:1fr} .insights{grid-template-columns:repeat(2,1fr)} }
 </style>
 </head>
 <body>
 <div id="root"><div class="loading">Carregando…</div></div>
-
 <script>
 const SUPABASE_URL="https://yzbeadoazozwikqloyqe.supabase.co";
 const SUPABASE_KEY="sb_publishable_hmw8JGj4Xhtg4uD2sGmbnQ_Gm4bA3L8";
 const root=document.getElementById("root");
-let session=null;
+let session=null, periodo=7, charts=[];
 
 const GAP_LABELS={fila:"Fila / demora",disponibilidade:"Faltou produto",atendimento:"Atendimento",variedade:"Pouca variedade",precos:"Preço alto",limpeza:"Limpeza",organizacao:"Organização",pao:"Pão"};
+const GAP_SUG={fila:"Reforce caixas/atendentes no horário de pico.",precos:"Comunique melhor promoções e ofertas.",disponibilidade:"Cheque ruptura de estoque dos itens mais pedidos.",atendimento:"Reforce treino e abordagem da equipe.",limpeza:"Aumente a frequência de limpeza no ponto.",variedade:"Avalie ampliar o mix de produtos.",organizacao:"Revise sinalização e organização das gôndolas."};
 const LIKE_LABELS={pao:"Pão fresquinho",atendimento:"Atendimento",variedade:"Variedade",organizacao:"Organização",precos:"Preço justo",limpeza:"Limpeza",disponibilidade:"Tinha tudo"};
 
-/* ---------- sessão / auth ---------- */
-function saveSession(d){session={access_token:d.access_token,refresh_token:d.refresh_token,user:d.user||session&&session.user,exp:Date.now()+((d.expires_in||3600)*1000)};try{localStorage.setItem("cuesta_gestor_sess",JSON.stringify(session));}catch(e){}}
+/* ---------- auth ---------- */
+function saveSession(d){session={access_token:d.access_token,refresh_token:d.refresh_token,user:d.user||(session&&session.user),exp:Date.now()+((d.expires_in||3600)*1000)};try{localStorage.setItem("cuesta_gestor_sess",JSON.stringify(session));}catch(e){}}
 function loadSession(){try{return JSON.parse(localStorage.getItem("cuesta_gestor_sess")||"null");}catch(e){return null;}}
 function logout(){session=null;try{localStorage.removeItem("cuesta_gestor_sess");}catch(e){}renderLogin();}
+async function login(email,password){const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email,password})});const d=await r.json();if(!r.ok)throw new Error(d.error_description||d.msg||d.error||"Não deu pra entrar. Confira e-mail e senha.");saveSession(d);return d;}
+async function refresh(){if(!session||!session.refresh_token)throw new Error("no refresh");const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:session.refresh_token})});const d=await r.json();if(!r.ok)throw new Error("refresh");saveSession(d);return d;}
+async function api(path){const call=()=>fetch(SUPABASE_URL+"/rest/v1/"+path,{headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+session.access_token}});let r=await call();if(r.status===401){try{await refresh();r=await call();}catch(e){logout();throw new Error("Sessão expirada.");}}if(!r.ok)throw new Error("Erro "+r.status);return r.json();}
 
-async function login(email,password){
-  const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=password",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({email,password})});
-  const d=await r.json();
-  if(!r.ok) throw new Error(d.error_description||d.msg||d.error||"Não deu pra entrar. Confira e-mail e senha.");
-  saveSession(d); return d;
-}
-async function refresh(){
-  if(!session||!session.refresh_token) throw new Error("no refresh");
-  const r=await fetch(SUPABASE_URL+"/auth/v1/token?grant_type=refresh_token",{method:"POST",headers:{apikey:SUPABASE_KEY,"Content-Type":"application/json"},body:JSON.stringify({refresh_token:session.refresh_token})});
-  const d=await r.json(); if(!r.ok) throw new Error("refresh falhou"); saveSession(d); return d;
-}
-async function api(path){
-  const call=()=>fetch(SUPABASE_URL+"/rest/v1/"+path,{headers:{apikey:SUPABASE_KEY,Authorization:"Bearer "+session.access_token}});
-  let r=await call();
-  if(r.status===401){ try{await refresh(); r=await call();}catch(e){ logout(); throw new Error("Sua sessão expirou. Entre de novo."); } }
-  if(!r.ok) throw new Error("Erro "+r.status+" ao buscar dados.");
-  return r.json();
-}
-
-/* ---------- helpers de UI ---------- */
+/* ---------- helpers ---------- */
 function el(h){const d=document.createElement("div");d.innerHTML=h.trim();return d.firstElementChild;}
 function estrelas(n){let s="";for(let i=1;i<=5;i++)s+=i<=n?"★":'<span class="off">★</span>';return s;}
 function faz(ts){const s=Math.floor((Date.now()-new Date(ts).getTime())/1000);if(s<60)return "agora";if(s<3600)return Math.floor(s/60)+" min";if(s<86400)return Math.floor(s/3600)+"h";return Math.floor(s/86400)+"d";}
 function hojeExtenso(){return new Date().toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});}
+function esc(t){return (t||"").replace(/</g,"&lt;");}
+function corNota(n){return n>=4?"#2E9E5B":n>=3?"#E4952B":"#C0392B";}
+function destroiCharts(){charts.forEach(c=>{try{c.destroy();}catch(e){}});charts=[];}
 
 /* ---------- LOGIN ---------- */
 function renderLogin(){
-  root.innerHTML="";
+  destroiCharts(); root.innerHTML="";
   const wrap=el('<div class="login-wrap"></div>');
-  const card=el(`
-    <div class="login-card">
-      <div class="brand">Cuesta</div>
-      <div class="sub">Central de Experiência do Cliente</div>
-      <label>E-mail</label>
-      <input id="email" type="email" autocomplete="username" placeholder="voce@cuesta.com.br">
-      <label>Senha</label>
-      <input id="senha" type="password" autocomplete="current-password" placeholder="••••••••">
-      <div class="err" id="erro"></div>
-      <button class="btn" id="entrar">Entrar</button>
-    </div>`);
+  const card=el(`<div class="login-card">
+      <div class="brand">Cuesta</div><div class="sub">Central de Experiência do Cliente</div>
+      <label>E-mail</label><input id="email" type="email" autocomplete="username" placeholder="voce@cuesta.com.br">
+      <label>Senha</label><input id="senha" type="password" autocomplete="current-password" placeholder="••••••••">
+      <div class="err" id="erro"></div><button class="btn" id="entrar">Entrar</button></div>`);
   wrap.appendChild(card); root.appendChild(wrap);
-  const erro=card.querySelector("#erro");
-  const btn=card.querySelector("#entrar");
+  const erro=card.querySelector("#erro"), btn=card.querySelector("#entrar");
   async function go(){
-    const email=card.querySelector("#email").value.trim();
-    const senha=card.querySelector("#senha").value;
+    const email=card.querySelector("#email").value.trim(), senha=card.querySelector("#senha").value;
     if(!email||!senha){erro.textContent="Preencha e-mail e senha.";erro.classList.add("on");return;}
     erro.classList.remove("on"); btn.disabled=true; btn.textContent="Entrando…";
-    try{ await login(email,senha); renderDashboard(); }
-    catch(e){ erro.textContent=e.message; erro.classList.add("on"); btn.disabled=false; btn.textContent="Entrar"; }
+    try{await login(email,senha); renderDashboard();}
+    catch(e){erro.textContent=e.message;erro.classList.add("on");btn.disabled=false;btn.textContent="Entrar";}
   }
   btn.onclick=go;
   card.querySelector("#senha").addEventListener("keydown",e=>{if(e.key==="Enter")go();});
@@ -179,148 +158,168 @@ function renderLogin(){
 
 /* ---------- DASHBOARD ---------- */
 async function renderDashboard(){
+  destroiCharts();
   root.innerHTML='<div class="loading">Carregando o painel…</div>';
-  let perfil={nome:"Gestor",papel:"gestor"};
-  try{
-    const pr=await api("perfil?id=eq."+session.user.id+"&select=nome,papel");
-    if(pr&&pr[0]) perfil=pr[0];
-  }catch(e){ /* sem perfil ainda: segue com genérico */ }
 
-  let lojas=[], avals=[], produtos=[];
-  try{ lojas=await api("v_hoje_na_loja?select=*&order=nota_media.asc.nullslast"); }catch(e){}
-  try{ avals=await api("avaliacao?order=criado_em.desc&limit=60&select=nota_geral,nps,encontrou,criado_em,detalhes,setor(nome),loja(nome)"); }catch(e){}
+  let perfil={nome:"Gestor",papel:"gestor"};
+  try{const pr=await api("perfil?id=eq."+session.user.id+"&select=nome,papel");if(pr&&pr[0])perfil=pr[0];}catch(e){}
+
+  const desde=new Date(Date.now()-periodo*86400000); desde.setHours(0,0,0,0);
+  let avals=[], produtos=[];
+  try{ avals=await api("avaliacao?criado_em=gte."+desde.toISOString()+"&order=criado_em.desc&limit=3000&select=nota_geral,nps,encontrou,sentimento,criado_em,detalhes,setor(nome),loja(nome)"); }catch(e){}
   try{ produtos=await api("v_produtos_nao_encontrados?select=*&limit=6"); }catch(e){}
 
-  // KPIs de hoje (a partir da visão)
-  let totalHoje=0, insat=0, somaNota=0, nNota=0, somaNps=0, nNps=0;
-  lojas.forEach(l=>{
-    totalHoje+=(+l.avaliacoes_hoje||0);
-    insat+=(+l.insatisfeitos||0);
-    if(l.nota_media!=null){ somaNota+=(+l.nota_media)*(+l.avaliacoes_hoje||0); nNota+=(+l.avaliacoes_hoje||0); }
-    if(l.nps_medio!=null){ somaNps+=(+l.nps_medio)*(+l.avaliacoes_hoje||0); nNps+=(+l.avaliacoes_hoje||0); }
-  });
-  const notaMedia = nNota? (somaNota/nNota) : null;
-  const npsMedio  = nNps? (somaNps/nNps) : null;
+  /* ---- cálculos ---- */
+  const n=avals.length;
+  const notas=avals.filter(a=>a.nota_geral).map(a=>a.nota_geral);
+  const notaMedia = notas.length? notas.reduce((s,x)=>s+x,0)/notas.length : null;
+  const npsArr=avals.filter(a=>a.nps!=null).map(a=>a.nps);
+  const npsMedio = npsArr.length? npsArr.reduce((s,x)=>s+x,0)/npsArr.length : null;
+  const satisf = notas.length? Math.round(notas.filter(x=>x>=4).length/notas.length*100) : null;
+  const insat = notas.filter(x=>x<=2).length;
 
-  // pontos de atenção: soma os "gaps" das avaliações recentes
-  const tally={};
-  avals.forEach(a=>{ const g=(a.detalhes&&a.detalhes.gaps)||[]; g.forEach(k=>{tally[k]=(tally[k]||0)+1;}); });
-  const atencao=Object.entries(tally).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  const maxAt=atencao.length?atencao[0][1]:1;
+  // por setor
+  const setores={};
+  avals.forEach(a=>{const s=(a.setor&&a.setor.nome)||"Loja";(setores[s]=setores[s]||{n:0,soma:0}); if(a.nota_geral){setores[s].n++;setores[s].soma+=a.nota_geral;}});
+  const setorArr=Object.entries(setores).map(([k,v])=>({setor:k,n:v.n,media:v.n?v.soma/v.n:0})).filter(x=>x.n).sort((a,b)=>b.media-a.media);
 
+  // distribuição
+  const dist=[0,0,0,0,0]; notas.forEach(x=>dist[x-1]++);
+
+  // tendência (14 dias)
+  const dias=[]; const mapDia={};
+  for(let i=13;i>=0;i--){const dt=new Date(Date.now()-i*86400000);const key=dt.toISOString().slice(0,10);dias.push({key,label:dt.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"})});mapDia[key]={soma:0,n:0};}
+  avals.forEach(a=>{const key=new Date(a.criado_em).toISOString().slice(0,10);if(mapDia[key]&&a.nota_geral){mapDia[key].soma+=a.nota_geral;mapDia[key].n++;}});
+  const tend=dias.map(d=>{const m=mapDia[d.key];return m.n?+(m.soma/m.n).toFixed(2):null;});
+
+  // elogios (likes) e melhorias (gaps)
+  const likeT={}, gapT={};
+  avals.forEach(a=>{const d=a.detalhes||{};(d.liked||[]).forEach(k=>likeT[k]=(likeT[k]||0)+1);(d.gaps||[]).forEach(k=>gapT[k]=(gapT[k]||0)+1);});
+  const likes=Object.entries(likeT).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const gaps=Object.entries(gapT).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxLike=likes.length?likes[0][1]:1, maxGap=gaps.length?gaps[0][1]:1;
+  const elogiosTxt=avals.filter(a=>a.nota_geral>=4 && a.detalhes && (a.detalhes.improve||"").trim()).slice(0,3);
+
+  // insights
+  const melhorSetor=setorArr.filter(s=>s.n>=3)[0];
+  const piorSetor=[...setorArr].filter(s=>s.n>=3).sort((a,b)=>a.media-b.media)[0];
+  const diaMov=dias.map(d=>({label:d.label,n:mapDia[d.key].n})).sort((a,b)=>b.n-a.n)[0];
+  const topElogio=likes[0];
+
+  /* ---- render ---- */
   root.innerHTML="";
   const shell=el('<div class="shell"></div>');
+  shell.appendChild(el(`<header class="top"><div class="brand">Cuesta<small>Experiência do Cliente</small></div>
+    <div class="who"><span>Olá, <b>${esc(perfil.nome)||"Gestor"}</b></span><span class="badge">${esc(perfil.papel)||""}</span><button class="sair" id="sair">Sair</button></div></header>`));
 
-  // topo
-  shell.appendChild(el(`
-    <header class="top">
-      <div class="brand">Cuesta<small>Experiência do Cliente</small></div>
-      <div class="who"><span>Olá, <b>${perfil.nome||"Gestor"}</b></span><span class="badge">${perfil.papel||""}</span>
-        <button class="sair" id="sair">Sair</button></div>
-    </header>`));
+  shell.appendChild(el(`<div class="hero-line">
+      <div><h1>Visão da loja</h1><div class="h1sub">${hojeExtenso()}</div></div>
+      <div class="tabs">
+        <button data-p="1" class="${periodo===1?'on':''}">Hoje</button>
+        <button data-p="7" class="${periodo===7?'on':''}">7 dias</button>
+        <button data-p="30" class="${periodo===30?'on':''}">30 dias</button>
+      </div></div>`));
 
-  // título + data
-  shell.appendChild(el(`
-    <div class="hero-line">
-      <h1>Hoje na ${lojas.length>1?"rede":"loja"}</h1>
-      <span class="data-hoje">${hojeExtenso()}</span>
-    </div>`));
-
-  // KPIs
-  shell.appendChild(el(`
-    <div class="kpis">
-      <div class="kpi"><div class="lab">Avaliações hoje</div><div class="val">${totalHoje}</div><div class="foot">respostas de clientes</div></div>
-      <div class="kpi"><div class="lab">Nota média</div><div class="val">${notaMedia!=null?notaMedia.toFixed(1):"—"}<small>/5</small></div><div class="foot">${notaMedia!=null?"das avaliações de hoje":"sem dados hoje"}</div></div>
+  shell.appendChild(el(`<div class="kpis">
+      <div class="kpi"><div class="lab">Avaliações</div><div class="val">${n}</div><div class="foot">no período</div></div>
+      <div class="kpi"><div class="lab">Nota média</div><div class="val">${notaMedia!=null?notaMedia.toFixed(1):"—"}<small>/5</small></div><div class="foot">${notaMedia!=null?"de "+notas.length+" respostas":"sem dados"}</div></div>
       <div class="kpi"><div class="lab">NPS (0–10)</div><div class="val">${npsMedio!=null?npsMedio.toFixed(1):"—"}</div><div class="foot">o quanto indicariam</div></div>
-      <div class="kpi ${insat>0?"alerta":""}"><div class="lab">Precisam de atenção</div><div class="val">${insat}</div><div class="foot">avaliações de 1–2 estrelas</div></div>
-    </div>`));
+      <div class="kpi ${insat>0?"alerta":""}"><div class="lab">Satisfação</div><div class="val">${satisf!=null?satisf+"%":"—"}</div><div class="foot">${insat} avaliação(ões) de 1–2★</div></div>
+  </div>`));
 
-  // grid: esquerda (últimas) / direita (lojas + atenção + produtos)
-  const grid=el('<div class="grid2"></div>');
+  // gráficos
+  const g3=el('<div class="grid g-3"></div>');
+  g3.appendChild(el('<div class="panel"><h2>Desempenho por setor</h2><p class="p-sub">Nota média de cada setor no período.</p><div class="chart-box tall"><canvas id="cSetor"></canvas></div></div>'));
+  g3.appendChild(el('<div class="panel"><h2>Tendência da nota</h2><p class="p-sub">Média por dia (últimos 14 dias).</p><div class="chart-box tall"><canvas id="cTend"></canvas></div></div>'));
+  g3.appendChild(el('<div class="panel"><h2>Distribuição das notas</h2><p class="p-sub">Quantas de cada estrela.</p><div class="chart-box tall"><canvas id="cDist"></canvas></div></div>'));
+  shell.appendChild(g3);
 
-  // ESQUERDA — últimas avaliações
-  const pLeft=el('<div class="panel"><h2>O que os clientes disseram</h2><p class="p-sub">As avaliações mais recentes, em tempo real.</p><div id="lista"></div></div>');
-  const lista=pLeft.querySelector("#lista");
-  if(!avals.length){ lista.appendChild(el('<div class="empty">Nenhuma avaliação ainda. Assim que o primeiro cliente responder, aparece aqui.</div>')); }
-  avals.slice(0,14).forEach(a=>{
-    const setor=a.setor&&a.setor.nome?a.setor.nome:"Loja";
-    const loja=a.loja&&a.loja.nome?a.loja.nome:"";
+  // elogios + melhorias
+  const g2=el('<div class="grid g-2"></div>');
+  // ELOGIOS
+  const pEl=el('<div class="panel"><h2>O que os clientes amaram</h2><p class="p-sub">Os pontos fortes mais citados — os acertos da loja.</p><div id="likes"></div><div class="quotes" id="q"></div></div>');
+  const likesBox=pEl.querySelector("#likes");
+  if(!likes.length) likesBox.appendChild(el('<div class="empty">Ainda sem elogios registrados no período.</div>'));
+  likes.forEach(([k,c],i)=>likesBox.appendChild(el(`<div class="att"><span class="rank">${i+1}</span><span class="nm">${LIKE_LABELS[k]||k}</span><span class="bar"><span class="pos" style="width:${Math.round(c/maxLike*100)}%"></span></span><span class="ct">${c}</span></div>`)));
+  const qBox=pEl.querySelector("#q");
+  elogiosTxt.forEach(a=>qBox.appendChild(el(`<div class="quote">“${esc(a.detalhes.improve)}”<span class="qm">${(a.setor&&a.setor.nome)||"Loja"} · ${estrelas(a.nota_geral).replace(/<[^>]+>/g,"★")}</span></div>`)));
+  g2.appendChild(pEl);
+  // MELHORIAS
+  const pMe=el('<div class="panel"><h2>Pontos de atenção</h2><p class="p-sub">O que mais trava a nota — com uma ideia de ação.</p><div id="gaps"></div></div>');
+  const gapsBox=pMe.querySelector("#gaps");
+  if(!gaps.length) gapsBox.appendChild(el('<div class="empty">Nada pesando por enquanto. 👏</div>'));
+  gaps.forEach(([k,c],i)=>gapsBox.appendChild(el(`<div class="att"><span class="rank">${i+1}</span><span class="nm">${GAP_LABELS[k]||k}<span class="sug">${GAP_SUG[k]||""}</span></span><span class="bar"><span class="neg" style="width:${Math.round(c/maxGap*100)}%"></span></span><span class="ct">${c}</span></div>`)));
+  g2.appendChild(pMe);
+  shell.appendChild(g2);
+
+  // insights
+  shell.appendChild(el('<div class="panel" style="background:transparent;border:0;padding:0"><h2 style="margin:6px 2px 12px">Coisas legais de saber</h2><div class="insights" id="ins"></div></div>'));
+  const ins=shell.querySelector("#ins");
+  const cards=[];
+  if(melhorSetor) cards.push({k:"Destaque do período",v:melhorSetor.setor,d:"Melhor nota: "+melhorSetor.media.toFixed(1)+"★ em "+melhorSetor.n+" avaliações."});
+  if(piorSetor && (!melhorSetor||piorSetor.setor!==melhorSetor.setor)) cards.push({k:"Merece um olhar",v:piorSetor.setor,d:"Menor nota: "+piorSetor.media.toFixed(1)+"★. Vale investigar."});
+  if(topElogio) cards.push({k:"O que mais elogiam",v:LIKE_LABELS[topElogio[0]]||topElogio[0],d:"Citado "+topElogio[1]+"× — mantenha esse padrão."});
+  if(diaMov && diaMov.n) cards.push({k:"Dia mais movimentado",v:diaMov.label,d:diaMov.n+" avaliações nesse dia."});
+  if(npsMedio!=null) cards.push({k:"Recomendação (NPS)",v:npsMedio.toFixed(1)+"/10",d:(npsMedio>=8?"Clientes viram promotores.":"Espaço pra melhorar a indicação.")});
+  cards.slice(0,4).forEach(c=>ins.appendChild(el(`<div class="ins"><div class="k">${c.k}</div><div class="v">${esc(c.v)}</div><div class="d">${esc(c.d)}</div></div>`)));
+  if(!cards.length) ins.appendChild(el('<div class="empty">Sem dados suficientes ainda — quando chegarem mais avaliações, os insights aparecem aqui.</div>'));
+
+  // produtos + últimas
+  const g2b=el('<div class="grid g-2"></div>');
+  const pFeed=el('<div class="panel"><h2>O que os clientes disseram</h2><p class="p-sub">Avaliações mais recentes.</p><div id="feed"></div></div>');
+  const feed=pFeed.querySelector("#feed");
+  if(!avals.length) feed.appendChild(el('<div class="empty">Nenhuma avaliação no período.</div>'));
+  avals.slice(0,12).forEach(a=>{
     const d=a.detalhes||{};
-    const likes=(d.liked||[]).slice(0,3).map(k=>`<span class="chip pos">${LIKE_LABELS[k]||k}</span>`).join("");
-    const gaps=(d.gaps||[]).slice(0,3).map(k=>`<span class="chip neg">${GAP_LABELS[k]||k}</span>`).join("");
-    const recado=(d.improve||"").trim();
-    const nao=a.encontrou==="nao"?`<span class="chip neg">Não achou: ${(d.notFound||d.faltou||"—")}</span>`:"";
-    lista.appendChild(el(`
-      <div class="aval">
-        <div class="stars">${estrelas(a.nota_geral||0)}</div>
-        <div class="body">
-          <div class="meta"><b>${setor}</b>${loja?" · "+loja:""} · há ${faz(a.criado_em)}</div>
-          ${recado?`<div class="txt">"${recado.replace(/</g,"&lt;")}"</div>`:""}
-          <div class="chips">${likes}${gaps}${nao}</div>
-        </div>
-      </div>`));
+    const lk=(d.liked||[]).slice(0,3).map(k=>`<span class="chip pos">${LIKE_LABELS[k]||k}</span>`).join("");
+    const gp=(d.gaps||[]).slice(0,3).map(k=>`<span class="chip neg">${GAP_LABELS[k]||k}</span>`).join("");
+    const nao=a.encontrou==="nao"?`<span class="chip neg">Não achou: ${esc(d.notFound||d.faltou||"—")}</span>`:"";
+    const rec=(d.improve||"").trim();
+    feed.appendChild(el(`<div class="aval"><div class="stars">${estrelas(a.nota_geral||0)}</div>
+      <div class="body"><div class="meta"><b>${(a.setor&&a.setor.nome)||"Loja"}</b> · há ${faz(a.criado_em)}</div>
+      ${rec?`<div class="txt">“${esc(rec)}”</div>`:""}<div class="chips">${lk}${gp}${nao}</div></div></div>`));
   });
-  grid.appendChild(pLeft);
+  g2b.appendChild(pFeed);
+  const pProd=el('<div class="panel"><h2>Mais pedidos e não achados</h2><p class="p-sub">Produtos que procuraram e não encontraram.</p><div id="prod"></div></div>');
+  const prod=pProd.querySelector("#prod");
+  if(!produtos||!produtos.length) prod.appendChild(el('<div class="empty">Nenhum produto não encontrado registrado.</div>'));
+  (produtos||[]).forEach((p,i)=>prod.appendChild(el(`<div class="att"><span class="rank">${i+1}</span><span class="nm">${esc(p.produto)}</span><span class="ct">${p.mencoes}</span></div>`)));
+  g2b.appendChild(pProd);
+  shell.appendChild(g2b);
 
-  // DIREITA
-  const right=el('<div></div>');
-
-  // lojas hoje (se mais de uma)
-  if(lojas.length>1){
-    const pl=el('<div class="panel"><h2>Onde precisa de atenção</h2><p class="p-sub">Situação de cada loja hoje.</p><div id="lj"></div></div>');
-    const lj=pl.querySelector("#lj");
-    lojas.forEach(l=>{
-      const nota=l.nota_media!=null?(+l.nota_media):null;
-      let cls="none", txt="sem avaliações";
-      if(nota!=null){ const pct=nota*20; cls=pct>=85?"ok":pct>=70?"amber":"red"; txt=(l.avaliacoes_hoje||0)+" hoje"; }
-      lj.appendChild(el(`
-        <div class="loja-row">
-          <span class="dot ${cls}"></span>
-          <span class="nm">${l.loja}</span>
-          <span class="mini">${txt}</span>
-          <span class="nota">${nota!=null?nota.toFixed(1):"—"}</span>
-        </div>`));
-    });
-    right.appendChild(pl);
-  }
-
-  // pontos de atenção (gaps)
-  const pa=el('<div class="panel"><h2>Pontos de atenção</h2><p class="p-sub">O que mais trava a nota, somando as respostas recentes.</p><div id="att"></div></div>');
-  const att=pa.querySelector("#att");
-  if(!atencao.length){ att.appendChild(el('<div class="empty">Nada pesando por enquanto. 👏</div>')); }
-  atencao.forEach(([k,c],i)=>{
-    att.appendChild(el(`
-      <div class="att">
-        <span class="rank">${i+1}</span>
-        <span class="nm">${GAP_LABELS[k]||k}</span>
-        <span class="bar"><span style="width:${Math.round(c/maxAt*100)}%"></span></span>
-        <span class="ct">${c}</span>
-      </div>`));
-  });
-  right.appendChild(pa);
-
-  // produtos não encontrados
-  if(produtos && produtos.length){
-    const pp=el('<div class="panel"><h2>Mais pedidos e não achados</h2><p class="p-sub">Produtos que os clientes procuraram e não encontraram.</p><div id="pd"></div></div>');
-    const pd=pp.querySelector("#pd");
-    produtos.forEach((p,i)=>{
-      pd.appendChild(el(`<div class="att"><span class="rank">${i+1}</span><span class="nm">${p.produto}</span><span class="ct">${p.mencoes}</span></div>`));
-    });
-    right.appendChild(pp);
-  }
-
-  grid.appendChild(right);
-  shell.appendChild(grid);
   root.appendChild(shell);
+
+  // eventos
   shell.querySelector("#sair").onclick=logout;
+  shell.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{periodo=+b.dataset.p;renderDashboard();});
+
+  /* ---- desenha os gráficos ---- */
+  const gridColor="#EDEFEA", tick="#5E6B63";
+  Chart.defaults.font.family=getComputedStyle(document.body).fontFamily;
+  Chart.defaults.font.size=12; Chart.defaults.color=tick;
+
+  charts.push(new Chart(document.getElementById("cSetor"),{type:"bar",
+    data:{labels:setorArr.map(s=>s.setor),datasets:[{data:setorArr.map(s=>+s.media.toFixed(2)),backgroundColor:setorArr.map(s=>corNota(s.media)),borderRadius:7,barThickness:18}]},
+    options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.x.toFixed(1)+"★"}}},
+      scales:{x:{min:0,max:5,grid:{color:gridColor},ticks:{stepSize:1}},y:{grid:{display:false}}}}}));
+
+  charts.push(new Chart(document.getElementById("cTend"),{type:"line",
+    data:{labels:dias.map(d=>d.label),datasets:[{data:tend,borderColor:"#17593B",backgroundColor:"rgba(23,89,59,.10)",fill:true,tension:.35,spanGaps:true,pointRadius:2,pointBackgroundColor:"#17593B",borderWidth:2}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y!=null?c.parsed.y.toFixed(1)+"★":"sem dados"}}},
+      scales:{y:{min:0,max:5,grid:{color:gridColor},ticks:{stepSize:1}},x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:7}}}}}));
+
+  charts.push(new Chart(document.getElementById("cDist"),{type:"bar",
+    data:{labels:["1★","2★","3★","4★","5★"],datasets:[{data:dist,backgroundColor:["#C0392B","#D66A3F","#E4952B","#7FBF5A","#2E9E5B"],borderRadius:7}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>c.parsed.y+" avaliações"}}},
+      scales:{y:{beginAtZero:true,grid:{color:gridColor},ticks:{precision:0}},x:{grid:{display:false}}}}}));
 }
 
 /* ---------- start ---------- */
 (function start(){
   session=loadSession();
-  if(session && session.access_token && session.exp>Date.now()-60000){ renderDashboard(); }
-  else if(session && session.refresh_token){ refresh().then(renderDashboard).catch(renderLogin); }
-  else { renderLogin(); }
+  if(session&&session.access_token&&session.exp>Date.now()-60000){renderDashboard();}
+  else if(session&&session.refresh_token){refresh().then(renderDashboard).catch(renderLogin);}
+  else{renderLogin();}
 })();
 </script>
 </body>
