@@ -25,7 +25,7 @@
   .frame{max-width:430px;margin:0 auto;min-height:100dvh;height:100dvh;display:flex;flex-direction:column;position:relative;background:var(--sheet);box-shadow:0 0 0 1px rgba(0,0,0,.05);overflow:hidden}
 
   /* HERO */
-  .hero{flex:none;background:linear-gradient(165deg,#195c3f 0%,#103a28 100%);color:#fff;padding:18px 20px 44px;position:relative;overflow:hidden}
+  .hero{flex:none;background:linear-gradient(165deg,var(--sector,#195c3f) 0%,var(--sector-deep,#103a28) 100%);color:#fff;padding:18px 20px 44px;position:relative;overflow:hidden}
   .hero:after{content:"";position:absolute;right:-46px;top:-46px;width:160px;height:160px;border-radius:50%;background:rgba(228,149,43,.20)}
   .hero-top{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;z-index:2}
   .brand{font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:-.02em;color:#fff}
@@ -173,7 +173,7 @@ const QR_SLUG=(new URLSearchParams(location.search).get("qr")||"l04-pad-001");
 
 const CTX={loja:"Loja 04",setor:"Padaria",qr:"QR-L04-PAD-001",
   empresa_id:null,loja_id:null,setor_id:null,ponto_id:null,qr_id:null,campanha_id:null,pesquisa_versao_id:null,last_avaliacao_id:null,
-  surveyPos:null,surveyNeg:null,ratingText:null};
+  surveyPos:null,surveyNeg:null,ratingText:null,cor:null};
 
 function sbHeaders(extra){return Object.assign({apikey:SUPABASE_KEY,"Content-Type":"application/json"},extra||{});}
 async function sbGet(path){const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{headers:sbHeaders()});if(!r.ok)throw new Error("GET "+r.status);return r.json();}
@@ -195,7 +195,7 @@ async function loadContext(){
         if(pt){
           CTX.loja_id=pt.loja_id; CTX.setor_id=pt.setor_id;
           if(pt.loja_id){try{const lr=await sbGet("loja?id=eq."+pt.loja_id+"&select=nome&limit=1");if(lr&&lr[0]&&lr[0].nome)CTX.loja=lr[0].nome;}catch(e){}}
-          if(pt.setor_id){try{const sr=await sbGet("setor?id=eq."+pt.setor_id+"&select=nome&limit=1");if(sr&&sr[0]&&sr[0].nome)CTX.setor=sr[0].nome;}catch(e){}}
+          if(pt.setor_id){try{const sr=await sbGet("setor?id=eq."+pt.setor_id+"&select=nome,cor&limit=1");if(sr&&sr[0]){if(sr[0].nome)CTX.setor=sr[0].nome;if(sr[0].cor){CTX.cor=sr[0].cor;applyTheme();}}}catch(e){}}
         }
       }catch(e){}
     }
@@ -314,6 +314,8 @@ function buildFlow(){
 }
 function posSet(){if(CTX.surveyPos)return CTX.surveyPos;const s=FACTOR_SETS[SECTOR]||FACTOR_SETS.default;return s.pos;}
 function negSet(){if(CTX.surveyNeg)return CTX.surveyNeg;const s=FACTOR_SETS[SECTOR]||FACTOR_SETS.default;return s.neg;}
+function darken(hex,amt){try{const c=hex.replace("#","");let r=parseInt(c.substr(0,2),16),g=parseInt(c.substr(2,2),16),b=parseInt(c.substr(4,2),16);r=Math.round(r*(1-amt));g=Math.round(g*(1-amt));b=Math.round(b*(1-amt));return "#"+[r,g,b].map(x=>x.toString(16).padStart(2,"0")).join("");}catch(e){return hex;}}
+function applyTheme(){if(!CTX.cor)return;try{document.documentElement.style.setProperty("--sector",CTX.cor);document.documentElement.style.setProperty("--sector-deep",darken(CTX.cor,0.42));}catch(e){}}
 function aplicaPesquisa(perguntas){
   if(!perguntas||!perguntas.length)return;
   let pos=null,neg=null,rating=null;
