@@ -173,7 +173,7 @@ const QR_SLUG=(new URLSearchParams(location.search).get("qr")||"l04-pad-001");
 
 const CTX={loja:"Loja 04",setor:"Padaria",qr:"QR-L04-PAD-001",
   empresa_id:null,loja_id:null,setor_id:null,ponto_id:null,qr_id:null,campanha_id:null,pesquisa_versao_id:null,last_avaliacao_id:null,
-  surveyPos:null,surveyNeg:null,ratingText:null,cor:null};
+  surveyPos:null,surveyNeg:null,ratingText:null,cor:null,modo:null};
 
 function sbHeaders(extra){return Object.assign({apikey:SUPABASE_KEY,"Content-Type":"application/json"},extra||{});}
 async function sbGet(path){const r=await fetch(SUPABASE_URL+"/rest/v1/"+path,{headers:sbHeaders()});if(!r.ok)throw new Error("GET "+r.status);return r.json();}
@@ -195,7 +195,7 @@ async function loadContext(){
         if(pt){
           CTX.loja_id=pt.loja_id; CTX.setor_id=pt.setor_id;
           if(pt.loja_id){try{const lr=await sbGet("loja?id=eq."+pt.loja_id+"&select=nome&limit=1");if(lr&&lr[0]&&lr[0].nome)CTX.loja=lr[0].nome;}catch(e){}}
-          if(pt.setor_id){try{const sr=await sbGet("setor?id=eq."+pt.setor_id+"&select=nome,cor&limit=1");if(sr&&sr[0]){if(sr[0].nome)CTX.setor=sr[0].nome;if(sr[0].cor){CTX.cor=sr[0].cor;applyTheme();}}}catch(e){}}
+          if(pt.setor_id){try{const sr=await sbGet("setor?id=eq."+pt.setor_id+"&select=nome,cor,modo&limit=1");if(sr&&sr[0]){if(sr[0].nome)CTX.setor=sr[0].nome;if(sr[0].cor){CTX.cor=sr[0].cor;applyTheme();}if(sr[0].modo)CTX.modo=sr[0].modo;}}catch(e){}}
         }
       }catch(e){}
     }
@@ -212,7 +212,7 @@ function buildPayload(){
     nota_geral:state.rating||null,nps:(state.recommend==null?null:state.recommend),encontrou:state.found,
     sentimento:(state.rating>=4?"positivo":(state.rating&&state.rating<=2?"negativo":"neutro")),
     dispositivo_hash:deviceHash(),
-    detalhes:{liked:state.liked,gaps:state.gaps,improve:state.improve,notFound:state.notFound,horario:state.horario,precoPercep:state.precoPercep,atendDetalhe:state.atendDetalhe,faltou:state.faltou,limpezaLocal:state.limpezaLocal},
+    detalhes:{liked:state.liked,gaps:state.gaps,improve:state.improve,notFound:state.notFound,horario:state.horario,precoPercep:state.precoPercep,atendDetalhe:state.atendDetalhe,faltou:state.faltou,limpezaLocal:state.limpezaLocal,carrinho:state.carrinho,carrinhoProb:state.carrinhoProb,modo:CTX.modo},
     _cid:"c_"+Date.now()+"_"+Math.random().toString(36).slice(2)};
 }
 function getFila(){try{return JSON.parse(localStorage.getItem("cuesta_fila")||"[]");}catch(e){return [];}}
@@ -299,11 +299,14 @@ const FOLLOWUPS={
     opts:[{k:"banheiro",ic:"sparkles",t:"Banheiro"},{k:"corredores",ic:"grid",t:"Corredores"},{k:"setor",ic:"bread",t:"O próprio setor"},{k:"caixa",ic:"cart",t:"Área dos caixas"}]}
 };
 
-const BLANK={rating:0,found:null,liked:[],gaps:[],recommend:null,improve:"",notFound:"",contactName:"",contactPhone:"",contactOk:false,supportMsg:"",horario:null,precoPercep:null,atendDetalhe:null,faltou:"",limpezaLocal:null};
+const BLANK={rating:0,found:null,liked:[],gaps:[],recommend:null,improve:"",notFound:"",contactName:"",contactPhone:"",contactOk:false,supportMsg:"",horario:null,precoPercep:null,atendDetalhe:null,faltou:"",limpezaLocal:null,carrinho:null,carrinhoProb:[]};
 let state={...BLANK};
 const RATING_WORDS=["","Que pena","Podia ser melhor","Foi ok","Foi boa","Foi ótima!"];
 
 function buildFlow(){
+  if(CTX.modo==="sac") return ["sac"];
+  if(CTX.modo==="disponibilidade"){ const f=["found"]; if(state.found&&state.found!=="tudo") f.push("notfound"); f.push("done"); return f; }
+  if(CTX.modo==="carrinho"){ const f=["carrinho"]; if(state.carrinho==="sim") f.push("carrinho_prob"); f.push("done"); return f; }
   const f=["rating","found"];
   if(state.found==="nao") f.push("notfound");
   if(state.rating>=3) f.push("liked");                   // quem gostou responde PRIMEIRO o que agradou
@@ -398,11 +401,24 @@ function footerNav(footer,label,enabled,onNext,opts={}){
 function render(){
   const step=buildFlow()[idx];
   if(step==="done"){renderCelebrate("done");return;}
+  if(step==="sac"){renderSupport();return;}
   if(step.slice(0,3)==="fu:"){renderFollowup(scaffold(true),step.slice(3));return;}
   STEPS[step](scaffold(true));
 }
 
 const STEPS={
+  carrinho({heroQ,body,footer}){
+    setHero(heroQ,"Carrinhos","Seu carrinho teve algum problema?","Se tiver, a gente já cuida — é rapidinho.");
+    body.classList.add("center");
+    const opts=[{k:"nao",ic:"check",t:"Não, estava tudo certo"},{k:"sim",ic:"x",t:"Sim, teve um problema"}];
+    body.innerHTML='<div class="opts" id="o"></div>';
+    const box=body.querySelector("#o");
+    opts.forEach(o=>{const b=el(optBtn(state.carrinho===o.k,o.ic,o.t));b.onclick=()=>{state.carrinho=o.k;[...box.children].forEach(c=>c.classList.remove("sel"));b.classList.add("sel");setTimeout(next,300);};box.appendChild(b);});
+    footerNav(footer,"Continuar",!!state.carrinho,next);
+  },
+  carrinho_prob(ctx){
+    multiFactor(ctx,"Pode marcar vários","Qual foi o problema?","A gente separa esse carrinho pra manutenção.",[{k:"roda",ic:"cart",t:"Roda travando"},{k:"sujo",ic:"sparkles",t:"Sujo"},{k:"quebrado",ic:"grid",t:"Quebrado ou amassado"},{k:"empurrar",ic:"cart",t:"Difícil de empurrar"},{k:"cinto",ic:"heart",t:"Cinto do bebê com problema"}],"carrinhoProb");
+  },
   rating({heroQ,body,footer}){
     setHero(heroQ,saudacao(),CTX.ratingText||("Como foi sua visita à "+CTX.setor+" hoje?"),"Sua opinião ajuda a Cuesta a melhorar de verdade 💚");
     body.classList.add("center");
